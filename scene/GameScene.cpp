@@ -100,7 +100,7 @@ GameScene::~GameScene() {
 
 	delete model_;
 	delete debugCamera_;
-
+	delete player_;//自キャラの開放
 }
 
 void GameScene::Initialize() {
@@ -120,50 +120,6 @@ void GameScene::Initialize() {
 	std::mt19937_64 engine(seed_gen());
 	//乱数範囲の指定(使用例)
 	std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
-	////親(0番)
-	//worldTransforms_[0].Initialize();
-	////子(1番)
-	//worldTransforms_[1].Initialize();
-	//worldTransforms_[1].translation_ = { 0,4.5f,0 };//ローカル座標
-	//worldTransforms_[1].parent_ = &worldTransforms_[0];
-
-	//キャラクターの大元
-	worldTransforms_[PartId::kRoot].Initialize();
-	//脊椎
-	worldTransforms_[PartId::kSpine].Initialize();
-	worldTransforms_[PartId::kSpine].parent_ = &worldTransforms_[PartId::kRoot];
-	worldTransforms_[PartId::kSpine].translation_ = { 0,4.5f,0 };
-	//上半身
-	//胸
-	worldTransforms_[PartId::kChest].Initialize();//Chestの初期化
-	worldTransforms_[PartId::kChest].parent_ = &worldTransforms_[PartId::kSpine];//親をSpineに指定
-	worldTransforms_[PartId::kChest].translation_ = { 0,0,0 };//Spineからのローカル座標を設定
-	//頭
-	worldTransforms_[PartId::kHead].Initialize();//Headの初期化
-	worldTransforms_[PartId::kHead].parent_ = &worldTransforms_[PartId::kChest];//親をChestに指定
-	worldTransforms_[PartId::kHead].translation_ = { 0,3.5f,0 };//Chestからのローカル座標を設定
-	//左腕
-	worldTransforms_[PartId::kArmL].Initialize();//ArmLの初期化
-	worldTransforms_[PartId::kArmL].parent_ = &worldTransforms_[PartId::kChest];//親をChestに指定
-	worldTransforms_[PartId::kArmL].translation_ = { 3.5f,0,0 };//Chestからのローカル座標を設定
-	//右腕
-	worldTransforms_[PartId::kArmR].Initialize();//ArmRの初期化
-	worldTransforms_[PartId::kArmR].parent_ = &worldTransforms_[PartId::kChest];//親をChestに指定
-	worldTransforms_[PartId::kArmR].translation_ = { -3.5f,0,0 };//Chestからのローカル座標を設定
-	//下半身
-	//尻
-	worldTransforms_[PartId::kHip].Initialize();//Hipの初期化
-	worldTransforms_[PartId::kHip].parent_ = &worldTransforms_[PartId::kSpine];//親をSpineに指定
-	worldTransforms_[PartId::kHip].translation_ = { 0,-3.5f,0 };//Spineからのローカル座標を設定
-	//左足
-	worldTransforms_[PartId::kLegL].Initialize();//LegLの初期化
-	worldTransforms_[PartId::kLegL].parent_ = &worldTransforms_[PartId::kHip];//親をHipに指定
-	worldTransforms_[PartId::kLegL].translation_ = { 3.0f,-3.5f,0 };//Hipからのローカル座標を設定
-	//右足
-	worldTransforms_[PartId::kLegR].Initialize();//LegRの初期化
-	worldTransforms_[PartId::kLegR].parent_ = &worldTransforms_[PartId::kHip];//親をHipに指定
-	worldTransforms_[PartId::kLegR].translation_ = { -3.0f,-3.5f,0 };//Hipからのローカル座標を設定
-
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
 	//デバッグカメラの生成
@@ -172,11 +128,36 @@ void GameScene::Initialize() {
 	AxisIndicator::GetInstance()->SetVisible(true);
 	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
 	AxisIndicator::GetInstance()->SetTargetViewProjection(&viewProjection_);
+	//自キャラの生成
+	player_ = new Player();
+	//自キャラの初期化
+	player_->Initialize(model_,textureHandle_);
 }
 
 void GameScene::Update() {
 	//デバッグカメラの更新
 	debugCamera_->Update();
+	////デバッグカメラ切り替え
+	//#ifdef _DEBUG
+	//if (input_->TriggerKey(DIK_C)) {
+	//	isDebugCameraActive_ = true;
+	//}
+	//#endif
+	////カメラの処理
+	//if (isDebugCameraActive_) {
+	//	//デバッグカメラの更新
+	//	debugCamera_->Update();
+	//	viewProjection_.matView = ;
+	//	viewProjection_.matProjection = ;
+	//	//ビュープロジェクションの転送
+	//	viewProjection_.TransferMatrix();
+	//}
+	//else {
+	//	//ビュープロジェクション行列の再計算と転送
+
+	//}
+	//自キャラの更新
+	player_->Update();
 	//キャラクター移動処理
 	{
 		//キャラクターの移動ベクトル
@@ -187,109 +168,6 @@ void GameScene::Update() {
 		}
 		else if (input_->PushKey(DIK_LEFT)) {
 			move = { -0.2f,0.0f,0.0f };
-		}
-		//ワールドトランスフォームの初期化
-		worldTransforms_[PartId::kRoot].Initialize();
-		//worldTransforms_[PartId::kRoot]のtranslationにmoveを加算する(移動)
-		worldTransforms_[PartId::kRoot].translation_.x += move.x;
-		//大元から順に更新していく
-		for (int i = 0; i < kNumPartId; i++) {
-			//worldTransforms_[i]のスケーリング・回転・平行移動を合成した行列を計算する
-			//worldTransforms_[0]のワールド行列を計算する
-			//単位行列の生成
-			Matrix4 matIdentity;
-			matIdentity = CreditMatrix(matIdentity);
-			//ワールド行列に単位行列を代入
-			worldTransforms_[i].matWorld_ = matIdentity;
-			//スケーリング行列の生成
-			Matrix4 matScale = CreateMatScale(worldTransforms_[i].scale_);
-			//回転行列の生成
-			Matrix4 matRot = CreateMatRotation(worldTransforms_[i].rotation_);
-			//平行移動行列の生成
-			Matrix4 matTrans = CreateMatTranslation(worldTransforms_[i].translation_);
-			//スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
-			worldTransforms_[i].matWorld_ *= matScale;
-			worldTransforms_[i].matWorld_ *= matRot;
-			worldTransforms_[i].matWorld_ *= matTrans;
-			//worldTransforms_[i]にparent_のワールド行列を掛け算代入する
-			if (worldTransforms_[i].parent_) {//ヌルチェック
-				worldTransforms_[i].matWorld_ *= worldTransforms_[i].parent_->matWorld_;
-			}
-			//wordlTransforms[i]のワールド行列を転送
-			worldTransforms_[i].TransferMatrix();
-		}
-		////worldTransforms_[0]のワールド行列を計算する
-		////単位行列の生成
-		//Matrix4 matIdentity;
-		//matIdentity = CreditMatrix(matIdentity);
-		////ワールド行列に単位行列を代入
-		//worldTransforms_[0].matWorld_ = matIdentity;
-		////スケーリング行列の生成
-		//Matrix4 matScale = CreateMatScale(worldTransforms_[0].scale_);
-		////回転行列の生成
-		//Matrix4 matRot = CreateMatRotation(worldTransforms_[0].rotation_, matIdentity);
-		////平行移動行列の生成
-		//Matrix4 matTrans = CreateMatTranslation(worldTransforms_[0].translation_);
-		////スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
-		//worldTransforms_[0].matWorld_ *= matScale;
-		//worldTransforms_[0].matWorld_ *= matRot;
-		//worldTransforms_[0].matWorld_ *= matTrans;
-		////worldTransforms_[0]のワールド行列を転送
-		//worldTransforms_[0].TransferMatrix();
-		//worldTransforms_[PartId::kRoot]のワールドtranslationをデバッグ表示する
-		debugText_->SetPos(50, 150);
-		debugText_->Printf(
-			"Root : (%f,%f,%f)", worldTransforms_[PartId::kRoot].translation_.x,
-			worldTransforms_[PartId::kRoot].translation_.y,
-			worldTransforms_[PartId::kRoot].translation_.z);
-	}
-	//子の更新
-	//{
-	//	//worldTransforms_[1]のスケーリング・回転・平行移動を合成した行列を計算する
-	//	//単位行列の生成
-	//	Matrix4 matIdentity;
-	//	matIdentity = CreditMatrix(matIdentity);
-	//	//ワールド行列に単位行列を代入
-	//	worldTransforms_[1].matWorld_ = matIdentity;
-	//	//スケーリング行列の生成
-	//	Matrix4 matScale = CreateMatScale(worldTransforms_[1].scale_);
-	//	//回転行列の生成
-	//	Matrix4 matRot = CreateMatRotation(worldTransforms_[1].rotation_);
-	//	//平行移動行列の生成
-	//	Matrix4 matTrans = CreateMatTranslation(worldTransforms_[1].translation_);
-	//	//スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
-	//	worldTransforms_[1].matWorld_ *= matScale;
-	//	worldTransforms_[1].matWorld_ *= matRot;
-	//	worldTransforms_[1].matWorld_ *= matTrans;
-	//	//worldTransforms_[1]にworldTransforms_[0](parent_)のワールド行列を掛け算代入する
-	//	worldTransforms_[1].matWorld_ *= worldTransforms_[0].matWorld_;
-	//	//worldTransforms_[1]のワールド行列を転送
-	//	worldTransforms_[1].TransferMatrix();
-	//}
-
-	//上半身回転処理
-	{
-		//押した方向で移動ベクトルを変更
-		if (input_->PushKey(DIK_U)) {
-			//胸パーツのY軸周りの角度を減少
-			worldTransforms_[PartId::kChest].rotation_.y -= kChestRotSpeed;
-		}
-		else if (input_->PushKey(DIK_I)) {
-			//胸パーツのY軸周りの角度を増加
-			worldTransforms_[PartId::kChest].rotation_.y += kChestRotSpeed;
-		}
-	}
-
-	//下半身回転処理
-	{
-		//押した方向で移動ベクトルを変更
-		if (input_->PushKey(DIK_J)) {
-			//尻パーツのY軸周りの角度を減少
-			worldTransforms_[PartId::kHip].rotation_.y -= kHipRotSpeed;
-		}
-		else if (input_->PushKey(DIK_K)) {
-			//尻パーツのY軸周りの角度を増加
-			worldTransforms_[PartId::kHip].rotation_.y += kHipRotSpeed;
 		}
 	}
 }
@@ -320,13 +198,8 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
-	//大元から順に描画していく
-	for (int i = 0; i < kNumPartId; i++) {
-		if (i < 2) {
-			continue;
-		}
-		model_->Draw(worldTransforms_[i], viewProjection_, textureHandle_);
-	}
+	//自キャラの描画
+	player_->Draw(viewProjection_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
