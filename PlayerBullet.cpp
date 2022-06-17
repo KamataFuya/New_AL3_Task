@@ -89,7 +89,7 @@ Matrix4 PlayerBullet::CreateMatTranslation(Vector3 translation) {
 	return matTrans;
 }
 
-void PlayerBullet::MatrixUpdate(WorldTransform& worldtransform_) {
+void PlayerBullet::MatrixUpdate(WorldTransform& worldtransform) {
 	//行列更新
 	//単位行列の生成
 	Matrix4 matIdentity;
@@ -110,7 +110,7 @@ void PlayerBullet::MatrixUpdate(WorldTransform& worldtransform_) {
 	worldTransform_.TransferMatrix();
 }
 
-void PlayerBullet::Initialize(Model* model, const Vector3& position) {
+void PlayerBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 	//ヌルポインタチェック
 	assert(model);
 	//引数として受け取ったデータをメンバ変数に記録する
@@ -121,11 +121,19 @@ void PlayerBullet::Initialize(Model* model, const Vector3& position) {
 	worldTransform_.Initialize();
 	//引数で受け取った初期座標をセット
 	worldTransform_.translation_ = position;
+	//引数で受け取った速度をメンバ変数に代入
+	velocity_ = velocity;
 }
 
 void PlayerBullet::Update() {
+	//座標を移動させる(1フレーム分の移動量を足しこむ)
+	worldTransform_.translation_ += velocity_;
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);
+	//時間経過でデス
+	if (--deathTimer_ <= 0) {
+		isDead_ = true;
+	}
 }
 
 void PlayerBullet::Draw(const ViewProjection& viewProjection) {

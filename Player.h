@@ -80,7 +80,15 @@ public://メンバ関数
 	/// 行列を更新する関数
 	/// </summary>
 	/// <param name="worldTransform_"></param>
-	void MatrixUpdate(WorldTransform& worldTransform_);
+	void MatrixUpdate(WorldTransform& worldTransform);
+
+	/// <summary>
+	/// ベクトルと行列の掛け算をする関数
+	/// </summary>
+	/// <param name="velocity"></param>
+	/// <param name="worldTransform"></param>
+	/// <returns></returns>
+	Vector3 VectorCrossMatrix(Vector3 velocity, WorldTransform& worldTransform);
 
 private:
 	//ワールド変換データ

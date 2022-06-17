@@ -83,12 +83,6 @@ public: // メンバ関数
 	/// </summary>
 	Matrix4 CreateMatTranslation(Vector3 translation);
 
-	/// <summary>
-	/// 行列を更新する関数
-	/// </summary>
-	/// <param name="worldTransform_"></param>
-	void MatrixUpdate(WorldTransform &worldTransform_);
-
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;

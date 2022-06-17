@@ -92,27 +92,6 @@ Matrix4 GameScene::CreateMatTranslation(Vector3 translation) {
 	return matTrans;
 }
 
-void GameScene::MatrixUpdate(WorldTransform &worldTransform_) {
-	//行列更新
-	//単位行列の生成
-	Matrix4 matIdentity;
-	matIdentity = CreditMatrix(matIdentity);
-	//ワールド行列に単位行列を代入
-	worldTransform_.matWorld_ = matIdentity;
-	//スケーリング行列の生成
-	Matrix4 matScale = CreateMatScale(worldTransform_.scale_);
-	//回転行列の生成
-	Matrix4 matRot = CreateMatRotation(worldTransform_.rotation_);
-	//平行移動行列の生成
-	Matrix4 matTrans = CreateMatTranslation(worldTransform_.translation_);
-	//スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
-	worldTransform_.matWorld_ *= matScale;
-	worldTransform_.matWorld_ *= matRot;
-	worldTransform_.matWorld_ *= matTrans;
-	//wordlTransform_のワールド行列を転送
-	worldTransform_.TransferMatrix();
-}
-
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
