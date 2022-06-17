@@ -2,20 +2,18 @@
 #include "Model.h"
 #include "WorldTransform.h"
 #include <cassert>
-#include "Input.h"
-#include "DebugText.h"
-#include "PlayerBullet.h"
+
 /// <summary>
-/// 自キャラ
+/// 自キャラの弾
 /// </summary>
-class Player {
-public://メンバ関数
+class PlayerBullet {
+public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	/// <param name = "model">モデル</param>
-	/// <param name = "textureHandle">テクスチャハンドル</param>
-	void Initialize(Model* model, uint32_t textureHandle);
+	/// <param name="model_"></param>
+	/// <param name="position"></param>
+	void Initialize(Model* model_, const Vector3& position);
 
 	/// <summary>
 	/// 更新
@@ -25,13 +23,8 @@ public://メンバ関数
 	/// <summary>
 	/// 描画
 	/// </summary>
-	/// <param name = "viewProjection">ビュープロジェクション(参照渡し)</param>
-	void Draw(ViewProjection& viewProjection_);
-
-	/// <summary>
-	/// 攻撃
-	/// </summary>
-	void Attack();
+	/// <param name="viewProjection"></param>
+	void Draw(const ViewProjection& viewProjection);
 
 	/// <summary>
 	/// ラジアンに変換する関数
@@ -78,21 +71,14 @@ public://メンバ関数
 	/// 行列を更新する関数
 	/// </summary>
 	/// <param name="worldTransform_"></param>
-	void MatrixUpdate(WorldTransform& worldTransform_);
+	void MatrixUpdate(WorldTransform& worldtransform_);
+	/*Matrix4 MatrixUpdate(WorldTransform& worldtransform_);*/
 
 private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;
-	//モデル
+	//モデルのポインタ(借りてくるやつ)
 	Model* model_ = nullptr;
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0u;
-	//入力処理するため
-	Input* input_ = nullptr;
-	//デバッグテキスト
-	DebugText* debugText_ = nullptr;
-	//ビュープロジェクション
-	ViewProjection viewProjection_;
-	//弾
-	PlayerBullet* bullet_ = nullptr;
 };

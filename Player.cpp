@@ -1,15 +1,13 @@
 #include "Player.h"
-#include "GameScene.h"
-#include "PrimitiveDrawer.h"
 
 float Player::ToRadian(float d) {
-	const float pi = 3.14;
+	const float pi = 3.14f;
 	d = d * (pi / 180);
 	return d;
 }
 
 float Player::ToDegree(float r) {
-	const float pi = 3.14;
+	const float pi = 3.14f;
 	r = r * 180.0f / pi;
 	return r;
 }
@@ -91,6 +89,31 @@ Matrix4 Player::CreateMatTranslation(Vector3 translation) {
 	return matTrans;
 }
 
+void Player::MatrixUpdate(WorldTransform& worldTransform_) {
+	//行列更新
+	//単位行列の生成
+	Matrix4 matIdentity;
+	matIdentity = CreditMatrix(matIdentity);
+	//ワールド行列に単位行列を代入
+	worldTransform_.matWorld_ = matIdentity;
+	//スケーリング行列の生成
+	Matrix4 matScale = CreateMatScale(worldTransform_.scale_);
+	//回転行列の生成
+	Matrix4 matRot = CreateMatRotation(worldTransform_.rotation_);
+	//平行移動行列の生成
+	Matrix4 matTrans = CreateMatTranslation(worldTransform_.translation_);
+	//スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
+	worldTransform_.matWorld_ *= matScale;
+	worldTransform_.matWorld_ *= matRot;
+	worldTransform_.matWorld_ *= matTrans;
+	//worldTransform_にparent_のワールド行列を掛け算代入する
+	if (worldTransform_.parent_) {//ヌルチェック
+		worldTransform_.matWorld_ *= worldTransform_.parent_->matWorld_;
+	}
+	//wordlTransform_のワールド行列を転送
+	worldTransform_.TransferMatrix();
+}
+
 void Player::Initialize(Model* model, uint32_t textureHandle) {
 	//NULLポインタチェック
 	assert(model);
@@ -105,6 +128,18 @@ void Player::Initialize(Model* model, uint32_t textureHandle) {
 }
 
 void Player::Update() {
+	//キャラクター旋回処理
+	const float kRotSpeed = 0.05f;
+	//押した方向で移動ベクトルを変更
+	if (input_->PushKey(DIK_U)) {
+		//Y軸周りの角度を減少
+		worldTransform_.rotation_.y -= kRotSpeed;
+	}
+	else if (input_->PushKey(DIK_I)) {
+		//Y軸周りの角度を増加
+		worldTransform_.rotation_.y += kRotSpeed;
+	}
+	//キャラクター移動処理
 	//キャラクターの移動ベクトル
 	Vector3 move = { 0,0,0 };
 	//移動ベクトルを変更する処理
@@ -177,9 +212,31 @@ void Player::Update() {
 		//wordlTransform_のワールド行列を転送
 		worldTransform_.TransferMatrix();
 	}
+	//キャラクター攻撃処理
+	Attack();
+	//弾更新
+	if (bullet_) {
+		bullet_->Update();
+	}
 }
 
 void Player::Draw(ViewProjection& viewProjection_) {
 	//モデルを描画
 	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
+	//弾描画
+	if (bullet_) {
+		bullet_->Draw(viewProjection_);
+	}
+}
+
+void Player::Attack() {
+	if (input_->TriggerKey(DIK_SPACE)) {
+		//自キャラの座標をコピー
+		Vector3 position = worldTransform_.translation_;
+		//弾を生成し、初期化
+		PlayerBullet* newBullet = new PlayerBullet();
+		newBullet->Initialize(model_, position);
+		//弾を登録する
+		bullet_ = newBullet;
+	}
 }

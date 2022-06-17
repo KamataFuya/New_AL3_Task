@@ -6,13 +6,11 @@
 #include <random>
 
 float GameScene::ToRadian(float d) {
-	const float pi = 3.14;
 	d = d * (pi / 180);
 	return d;
 }
 
 float GameScene::ToDegree(float r) {
-	const float pi = 3.14;
 	r = r * 180.0f / pi;
 	return r;
 }
@@ -94,6 +92,27 @@ Matrix4 GameScene::CreateMatTranslation(Vector3 translation) {
 	return matTrans;
 }
 
+void GameScene::MatrixUpdate(WorldTransform &worldTransform_) {
+	//行列更新
+	//単位行列の生成
+	Matrix4 matIdentity;
+	matIdentity = CreditMatrix(matIdentity);
+	//ワールド行列に単位行列を代入
+	worldTransform_.matWorld_ = matIdentity;
+	//スケーリング行列の生成
+	Matrix4 matScale = CreateMatScale(worldTransform_.scale_);
+	//回転行列の生成
+	Matrix4 matRot = CreateMatRotation(worldTransform_.rotation_);
+	//平行移動行列の生成
+	Matrix4 matTrans = CreateMatTranslation(worldTransform_.translation_);
+	//スケーリング・回転・平行移動を合成した行列を計算してmatWorldに代入
+	worldTransform_.matWorld_ *= matScale;
+	worldTransform_.matWorld_ *= matRot;
+	worldTransform_.matWorld_ *= matTrans;
+	//wordlTransform_のワールド行列を転送
+	worldTransform_.TransferMatrix();
+}
+
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
@@ -137,25 +156,6 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 	//デバッグカメラの更新
 	debugCamera_->Update();
-	////デバッグカメラ切り替え
-	//#ifdef _DEBUG
-	//if (input_->TriggerKey(DIK_C)) {
-	//	isDebugCameraActive_ = true;
-	//}
-	//#endif
-	////カメラの処理
-	//if (isDebugCameraActive_) {
-	//	//デバッグカメラの更新
-	//	debugCamera_->Update();
-	//	viewProjection_.matView = ;
-	//	viewProjection_.matProjection = ;
-	//	//ビュープロジェクションの転送
-	//	viewProjection_.TransferMatrix();
-	//}
-	//else {
-	//	//ビュープロジェクション行列の再計算と転送
-
-	//}
 	//自キャラの更新
 	player_->Update();
 	//キャラクター移動処理
