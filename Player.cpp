@@ -215,8 +215,8 @@ void Player::Update() {
 	//キャラクター攻撃処理
 	Attack();
 	//弾更新
-	if (bullet_) {
-		bullet_->Update();
+	for (std::unique_ptr<PlayerBullet>& bullet : bullets_) {
+		bullet->Update();
 	}
 }
 
@@ -224,8 +224,8 @@ void Player::Draw(ViewProjection& viewProjection_) {
 	//モデルを描画
 	model_->Draw(worldTransform_, viewProjection_, textureHandle_);
 	//弾描画
-	if (bullet_) {
-		bullet_->Draw(viewProjection_);
+	for (std::unique_ptr<PlayerBullet>& bullet : bullets_) {
+		bullet->Draw(viewProjection_);
 	}
 }
 
@@ -234,9 +234,9 @@ void Player::Attack() {
 		//自キャラの座標をコピー
 		Vector3 position = worldTransform_.translation_;
 		//弾を生成し、初期化
-		PlayerBullet* newBullet = new PlayerBullet();
+		std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerBullet>();
 		newBullet->Initialize(model_, position);
 		//弾を登録する
-		bullet_ = newBullet;
+		bullets_.push_back(std::move(newBullet));
 	}
 }
