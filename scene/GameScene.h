@@ -10,6 +10,7 @@
 #include "WorldTransform.h"
 #include "DebugCamera.h"
 #include "Player.h"
+#include "Enemy.h"
 
 /// <summary>
 /// ゲームシーン
@@ -103,6 +104,8 @@ private: // メンバ変数
 	float viewAngle = 0.0f;
 	//自キャラ
 	Player* player_ = nullptr;
+	//敵
+	Enemy* enemy_ = nullptr;
 
 public:
 	//π

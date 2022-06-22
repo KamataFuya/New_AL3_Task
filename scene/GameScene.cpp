@@ -130,6 +130,8 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	//自キャラの初期化
 	player_->Initialize(model_,textureHandle_);
+	//敵の生成
+	enemy_ = new Enemy();
 }
 
 void GameScene::Update() {
@@ -149,6 +151,11 @@ void GameScene::Update() {
 			move = { -0.2f,0.0f,0.0f };
 		}
 	}
+	//敵の更新
+	if (enemy_) {
+		enemy_->Update();
+	}
+	delete enemy_;
 }
 
 void GameScene::Draw() {
@@ -179,7 +186,10 @@ void GameScene::Draw() {
 	/// </summary>
 	//自キャラの描画
 	player_->Draw(viewProjection_);
-
+	//敵キャラの描画
+	if (enemy_) {
+		enemy_->Draw(viewProjection_);
+	}
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
