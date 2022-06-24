@@ -9,7 +9,6 @@ GameScene::GameScene() {}
 GameScene::~GameScene() {
 
 	delete model_;
-	delete debugCamera_;
 
 }
 
@@ -24,24 +23,18 @@ void GameScene::Initialize() {
 	textureHandle_ = TextureManager::Load("mario.jpg");
 	//3Dモデルの生成
 	model_ = Model::Create();
-	//ワールドトランスフォームの初期化
-	worldTransform_.Initialize();
 	//ビュープロジェクションの初期化
 	viewProjection_.Initialize();
-	//デバッグカメラの生成
-	debugCamera_ = new DebugCamera(1280, 720);
-	//軸方向表示の表示を有効にする
-	AxisIndicator::GetInstance()->SetVisible(true);
-	//軸方向表示が参照するビュープロジェクションを指定する(アドレス渡し)
-	AxisIndicator::GetInstance()->SetTargetViewProjection(&debugCamera_->GetViewProjection());
-	//ライン描画が参照するビュープロジェクションを指定する(アドレス渡し)
-	PrimitiveDrawer::GetInstance()->SetViewProjection(&debugCamera_->GetViewProjection());
-
+	//範囲forですべてのワールドトランスフォームを順に処理する
+	for (WorldTransform& worldTransform : worldTransform_) {
+		//ワールドトランスフォームの初期化
+		worldTransform_->Initialize();
+		//座標を設定
+		worldTransform.translation_ = { 0,0,0 };
+	}
 }
 
 void GameScene::Update() {
-	//デバッグカメラの更新
-	debugCamera_->Update();
 
 }
 
@@ -72,10 +65,9 @@ void GameScene::Draw() {
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
 	//3Dモデル描画
-	model_->Draw(worldTransform_, debugCamera_->GetViewProjection(), textureHandle_);
-	//ライン描画が参照するビュープロジェクションを指定する(アドレス渡し)
-	PrimitiveDrawer::GetInstance()->DrawLine3d({ 0,0,0 }, { 10,10,10 }, { 1,1,0,1 });
-
+	for (int i = 0; i < 9; i++) {
+		model_->Draw(worldTransform_[i], viewProjection_, textureHandle_);
+	}
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion

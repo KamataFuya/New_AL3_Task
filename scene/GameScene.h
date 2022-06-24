@@ -53,11 +53,11 @@ class GameScene {
 	//3Dモデル
 	Model* model_ = nullptr;
 	//ワールドトランスフォーム
-	WorldTransform worldTransform_;
+	WorldTransform worldTransform_[10];
 	//ビュープロジェクション
 	ViewProjection viewProjection_;
-	//デバッグカメラ
-	DebugCamera* debugCamera_ = nullptr;
+	////デバッグカメラ
+	//DebugCamera* debugCamera_ = nullptr;
 
 	/// <summary>
 	/// ゲームシーン用
