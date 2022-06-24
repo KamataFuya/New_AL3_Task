@@ -4,6 +4,7 @@
 #include "AxisIndicator.h"
 #include "PrimitiveDrawer.h"
 #include <random>
+#include "Enemy.h"
 
 float GameScene::ToRadian(float d) {
 	d = d * (pi / 180);
@@ -99,6 +100,7 @@ GameScene::~GameScene() {
 	delete model_;
 	delete debugCamera_;
 	delete player_;//自キャラの開放
+	delete enemy_;//敵の解放
 }
 
 void GameScene::Initialize() {
@@ -132,6 +134,8 @@ void GameScene::Initialize() {
 	player_->Initialize(model_,textureHandle_);
 	//敵の生成
 	enemy_ = new Enemy();
+	//敵の初期化
+	enemy_->Initialize(model_, textureHandle_);
 }
 
 void GameScene::Update() {
@@ -151,11 +155,10 @@ void GameScene::Update() {
 			move = { -0.2f,0.0f,0.0f };
 		}
 	}
-	//敵の更新
+	//敵の更新	
 	if (enemy_) {
 		enemy_->Update();
 	}
-	delete enemy_;
 }
 
 void GameScene::Draw() {

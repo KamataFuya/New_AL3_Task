@@ -8,10 +8,23 @@
 class Enemy {
 public://ƒƒ“ƒoŠÖ”
 
-	void Initialize(Model* model, const Vector3& position, const Vector3& velocity);
+	/// <summary>
+	/// ‰Šú‰»
+	/// </summary>
+	/// <param name="model"></param>
+	/// <param name="position"></param>
+	/// <param name="velocity"></param>
+	void Initialize(Model* model, uint32_t textureHandle);
 
+	/// <summary>
+	/// XV
+	/// </summary>
 	void Update();
 
+	/// <summary>
+	/// •`‰æ
+	/// </summary>
+	/// <param name="viewProjection"></param>
 	void Draw(const ViewProjection& viewProjection);
 
 	/// <summary>

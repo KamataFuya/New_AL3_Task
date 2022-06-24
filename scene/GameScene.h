@@ -89,7 +89,7 @@ private: // メンバ変数
 	Input* input_ = nullptr;
 	Audio* audio_ = nullptr;
 	DebugText* debugText_ = nullptr;
-
+	
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 	//3Dモデル

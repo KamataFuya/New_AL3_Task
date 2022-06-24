@@ -110,25 +110,27 @@ void Enemy::MatrixUpdate(WorldTransform& worldtransform) {
 	worldTransform_.TransferMatrix();
 }
 
-void Enemy::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
-	//ヌルポインタチェック
+void Enemy::Initialize(Model* model, uint32_t textureHandle) {
+	//NULLポインタチェック
 	assert(model);
 	//引数として受け取ったデータをメンバ変数に記録する
 	model_ = model;
-	//テクスチャ読み込み
-	textureHandle_ = TextureManager::Load("black.png");
-	//ワールドトランスフォームの初期化
+	textureHandle_ = textureHandle;
+	//ファイル名を指定してテクスチャを読み込む
+	textureHandle_ = TextureManager::Load("kuppa.png");
+	//ワールド変換の初期化
 	worldTransform_.Initialize();
-	//引数で受け取った初期座標をセット
-	worldTransform_.translation_ = position;
-	//引数で受け取った速度をメンバ変数に代入
-	velocity_ = velocity;
+	//初期座標の設定
+	worldTransform_.translation_ = { 0.0f,2.0f,20.0f };
 }
 
 void Enemy::Update() {
-	//異動処理
+	//移動処理
+	// 敵の速度
+	const float kEnemySpeed = -0.3f;
+	Vector3 velocity(0, 0, kEnemySpeed);
 	//座標に速度を加算して移動する
-	worldTransform_.translation_ += velocity_;
+	worldTransform_.translation_ += velocity;
 	//座標をもとに行列の更新を行う
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);
