@@ -125,12 +125,33 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 }
 
 void Enemy::Update() {
-	//移動処理
-	// 敵の速度
-	const float kEnemySpeed = -0.3f;
-	Vector3 velocity(0, 0, kEnemySpeed);
-	//座標に速度を加算して移動する
-	worldTransform_.translation_ += velocity;
+	////移動処理
+	//// 敵の速度
+	//const float kEnemySpeed = -0.3f;
+	//Vector3 velocity(0, 0, kEnemySpeed);
+	////座標に速度を加算して移動する
+	//worldTransform_.translation_ += velocity;
+	switch (phase_) {
+	case Phase::Approach:
+	default: {
+		//移動(ベクトルを加算)
+		const float kApproachSpeed = -0.3f;
+		Vector3 approachVelocity(0, 0, kApproachSpeed);
+		worldTransform_.translation_ += approachVelocity;
+		//規定の位置に達したら離脱
+		if (worldTransform_.translation_.z < 0.0f) {
+			phase_ = Phase::Leave;
+		}
+		break;
+	}
+	case Phase::Leave: {
+		//移動(ベクトルを加算)
+		const float kLeaveSpeed = -0.1f;
+		Vector3 leaveVelocity(kLeaveSpeed, -kLeaveSpeed, kLeaveSpeed);
+		worldTransform_.translation_ += leaveVelocity;
+		break;
+	}
+	}
 	//座標をもとに行列の更新を行う
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);

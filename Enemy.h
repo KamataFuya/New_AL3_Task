@@ -74,6 +74,15 @@ public://メンバ関数
 	/// <param name="worldTransform_"></param>
 	void MatrixUpdate(WorldTransform& worldtransform);
 
+	//行動フェーズ
+	enum class Phase {
+		Initial, //初期フェーズ
+		Approach, //接近する
+		Leave, //離脱する
+
+		kNumPhase
+	};
+
 private://メンバ変数
 	//ワールド変換データ
 	WorldTransform worldTransform_;
@@ -83,4 +92,6 @@ private://メンバ変数
 	uint32_t textureHandle_ = 0u;
 	//速度
 	Vector3 velocity_;
+	//フェーズ
+	Phase phase_ = Phase::Initial;
 };
