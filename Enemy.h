@@ -3,11 +3,14 @@
 #include "WorldTransform.h"
 #include <cassert>
 #include "EnemyBullet.h"
+#include <memory>
+#include <list>
 /// <summary>
 /// 敵
 /// </summary>
 class Enemy {
-public://メンバ関数
+	//メンバ関数
+public:
 
 	/// <summary>
 	/// 初期化
@@ -85,7 +88,8 @@ public://メンバ関数
 	/// </summary>
 	void Fire();
 
-private://メンバ変数
+	//メンバ変数
+private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;
 	//モデルのポインタ
@@ -95,5 +99,13 @@ private://メンバ変数
 	//速度
 	Vector3 velocity_;
 	//敵弾
-	EnemyBullet* enemyBullet_ = nullptr;
+	std::list < std::unique_ptr<EnemyBullet>> enemyBullets_;
+	//発射タイマー
+	int32_t kEnemyBulletTimer = 0;
+	
+public:
+	//発射時間
+	static const int kLifeInterval = 60;
+	//接近フェーズ初期化
+	void accessPhaseInitializing();
 };

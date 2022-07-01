@@ -130,6 +130,10 @@ void EnemyBullet::Update() {
 	worldTransform_.translation_ += velocity_;
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);
+	//時間経過でデス
+	if (--deathTimer_ <= 0) {
+		isDead_ = true;
+	}
 }
 
 void EnemyBullet::Draw(const ViewProjection& viewProjection) {

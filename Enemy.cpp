@@ -137,11 +137,16 @@ void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	worldTransform_.Initialize();
 	//初期座標の設定
 	worldTransform_.translation_ = { 20.0f,2.0f,20.0f };
-	//Enemy攻撃処理
-	Fire();
+	//接近フェーズ初期化
+	accessPhaseInitializing();
+
 }
 
 void Enemy::Update() {
+	//デスフラグの立った弾を削除
+	enemyBullets_.remove_if([](std::unique_ptr<EnemyBullet>& enemyBullet) {
+		return enemyBullet->IsDead();
+		});
 	//移動処理
 	// 敵の速度
 	const float kEnemySpeed = -0.1f;
@@ -151,9 +156,18 @@ void Enemy::Update() {
 	//座標をもとに行列の更新を行う
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);
+	//発射タイマーをカウントダウン
+	kEnemyBulletTimer--;
+	//指定時間に達した
+	if (kEnemyBulletTimer <= 0) {
+		//弾を発射
+		Fire();
+		//発射タイマーを初期化
+		kEnemyBulletTimer = kLifeInterval;
+	}
 	//EnemyBullet更新
-	if (enemyBullet_) {
-		enemyBullet_->Update();
+	for (std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets_) {
+		enemyBullet->Update();
 	}
 }
 
@@ -162,8 +176,8 @@ void Enemy::Draw(const ViewProjection& viewProjection) {
 	//モデルの描画
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);
 	//弾描画
-	if (enemyBullet_) {
-		enemyBullet_->Draw(viewProjection);
+	for (std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets_) {
+		enemyBullet->Draw(viewProjection);
 	}
 }
 
@@ -176,8 +190,13 @@ void Enemy::Fire() {
 	//速度ベクトルを自機の向きに合わせて回転させる
 	velocity = VectorCrossMatrix(velocity, worldTransform_);
 	//弾を生成し、初期化
-	EnemyBullet* newEnemyBullet = new EnemyBullet();
+	std::unique_ptr<EnemyBullet> newEnemyBullet = std::make_unique<EnemyBullet>();
 	newEnemyBullet->Initialize(model_, position, velocity);
 	//弾を登録する
-	enemyBullet_ = newEnemyBullet;
+	enemyBullets_.push_back(std::move(newEnemyBullet));
+}
+
+void Enemy::accessPhaseInitializing() {
+	//発射タイマーを初期化
+	kEnemyBulletTimer = kLifeInterval;
 }
