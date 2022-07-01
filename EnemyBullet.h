@@ -1,21 +1,18 @@
 #pragma once
 #include "Model.h"
 #include "WorldTransform.h"
-#include <cassert>
-#include "EnemyBullet.h"
-/// <summary>
-/// 敵
-/// </summary>
-class Enemy {
-public://メンバ関数
 
+/// <summary>
+/// 敵の弾
+/// </summary>
+class EnemyBullet{
+public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
 	/// <param name="model"></param>
 	/// <param name="position"></param>
-	/// <param name="velocity"></param>
-	void Initialize(Model* model, uint32_t textureHandle);
+	void Initialize(Model* model, const Vector3& position, const Vector3& velocity);
 
 	/// <summary>
 	/// 更新
@@ -73,19 +70,9 @@ public://メンバ関数
 	/// 行列を更新する関数
 	/// </summary>
 	/// <param name="worldTransform_"></param>
-	void MatrixUpdate(WorldTransform& worldtransform);
+	void MatrixUpdate(WorldTransform& worldtransform_);
 
-	/// <summary>
-	/// ベクトルと行列の掛け算
-	/// </summary>
-	Vector3 VectorCrossMatrix(Vector3 velocity, WorldTransform& worldTransform);
-
-	/// <summary>
-	/// 攻撃
-	/// </summary>
-	void Fire();
-
-private://メンバ変数
+private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;
 	//モデルのポインタ
@@ -94,6 +81,4 @@ private://メンバ変数
 	uint32_t textureHandle_ = 0u;
 	//速度
 	Vector3 velocity_;
-	//敵弾
-	EnemyBullet* enemyBullet_ = nullptr;
 };

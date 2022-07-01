@@ -1,32 +1,33 @@
-#include "Enemy.h"
+#include "EnemyBullet.h"
+#include <cassert>
 
-float Enemy::ToRadian(float d) {
+float EnemyBullet::ToRadian(float d) {
 	const float pi = 3.14f;
 	d = d * (pi / 180);
 	return d;
 }
 
-float Enemy::ToDegree(float r) {
+float EnemyBullet::ToDegree(float r) {
 	const float pi = 3.14f;
 	r = r * 180.0f / pi;
 	return r;
 }
 
-float Enemy::MinNum(float num, float num2) {
+float EnemyBullet::MinNum(float num, float num2) {
 	if (num < num2) {
 		return num;
 	}
 	return num2;
 }
 
-float Enemy::MaxNum(float num, float num2) {
+float EnemyBullet::MaxNum(float num, float num2) {
 	if (num > num2) {
 		return num;
 	}
 	return num2;
 }
 
-Matrix4 Enemy::CreditMatrix(Matrix4 matIdentity) {
+Matrix4 EnemyBullet::CreditMatrix(Matrix4 matIdentity) {
 	//単位行列の設定
 	matIdentity.m[0][0] = 1.0f;
 	matIdentity.m[1][1] = 1.0f;
@@ -36,7 +37,7 @@ Matrix4 Enemy::CreditMatrix(Matrix4 matIdentity) {
 	return matIdentity;
 }
 
-Matrix4 Enemy::CreateMatScale(Vector3 scale) {
+Matrix4 EnemyBullet::CreateMatScale(Vector3 scale) {
 	Matrix4 matScale;
 	//スケーリング行列の設定
 	matScale.m[0][0] = scale.x;
@@ -47,7 +48,7 @@ Matrix4 Enemy::CreateMatScale(Vector3 scale) {
 	return matScale;
 }
 
-Matrix4 Enemy::CreateMatRotation(Vector3 rotation) {
+Matrix4 EnemyBullet::CreateMatRotation(Vector3 rotation) {
 	Matrix4 matIdentity;
 	//回転行列の宣言
 	Matrix4 matRot = CreditMatrix(matIdentity);
@@ -79,7 +80,7 @@ Matrix4 Enemy::CreateMatRotation(Vector3 rotation) {
 	return matRot;
 }
 
-Matrix4 Enemy::CreateMatTranslation(Vector3 translation) {
+Matrix4 EnemyBullet::CreateMatTranslation(Vector3 translation) {
 	Matrix4 matTrans = MathUtility::Matrix4Identity();
 	//平行移動行列の設定
 	matTrans.m[3][0] = translation.x;
@@ -89,7 +90,7 @@ Matrix4 Enemy::CreateMatTranslation(Vector3 translation) {
 	return matTrans;
 }
 
-void Enemy::MatrixUpdate(WorldTransform& worldtransform) {
+void EnemyBullet::MatrixUpdate(WorldTransform& worldtransform_) {
 	//行列更新
 	//単位行列の生成
 	Matrix4 matIdentity;
@@ -110,74 +111,28 @@ void Enemy::MatrixUpdate(WorldTransform& worldtransform) {
 	worldTransform_.TransferMatrix();
 }
 
-Vector3 Enemy::VectorCrossMatrix(Vector3 velocity, WorldTransform& worldTransform) {
-	//ベクトルと行列の各要素の掛け算
-	velocity.x = velocity.x * worldTransform.matWorld_.m[0][0]
-		+ velocity.y * worldTransform.matWorld_.m[1][0]
-		+ velocity.z * worldTransform.matWorld_.m[2][0];
-	velocity.y = velocity.x * worldTransform.matWorld_.m[0][1]
-		+ velocity.y * worldTransform.matWorld_.m[1][1]
-		+ velocity.z * worldTransform.matWorld_.m[2][1];
-	velocity.z = velocity.x * worldTransform.matWorld_.m[0][2]
-		+ velocity.y * worldTransform.matWorld_.m[1][2]
-		+ velocity.z * worldTransform.matWorld_.m[2][2];
-	//ベクトルを返す
-	return velocity;
-}
-
-void Enemy::Initialize(Model* model, uint32_t textureHandle) {
+void EnemyBullet::Initialize(Model* model, const Vector3& position, const Vector3& velocity) {
 	//NULLポインタチェック
 	assert(model);
-	//引数として受け取ったデータをメンバ変数に記録する
 	model_ = model;
-	textureHandle_ = textureHandle;
-	//ファイル名を指定してテクスチャを読み込む
-	textureHandle_ = TextureManager::Load("kuppa.png");
-	//ワールド変換の初期化
+	//テクスチャ読み込み
+	textureHandle_ = TextureManager::Load("red.png");
+	//ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
-	//初期座標の設定
-	worldTransform_.translation_ = { 20.0f,2.0f,20.0f };
-	//Enemy攻撃処理
-	Fire();
+	//引数で受け取った初期座標をセット
+	worldTransform_.translation_ = position;
+	//引数で受け取った速度をメンバ変数に代入
+	velocity_ = velocity;
 }
 
-void Enemy::Update() {
-	//移動処理
-	// 敵の速度
-	const float kEnemySpeed = -0.1f;
-	Vector3 velocity(0, 0, kEnemySpeed);
-	//座標に速度を加算して移動する
-	worldTransform_.translation_ += velocity;
-	//座標をもとに行列の更新を行う
+void EnemyBullet::Update() {
+	//座標を移動させる(1フレーム分の移動量を足しこむ)
+	worldTransform_.translation_ += velocity_;
 	//行列の更新、転送
 	MatrixUpdate(worldTransform_);
-	//EnemyBullet更新
-	if (enemyBullet_) {
-		enemyBullet_->Update();
-	}
 }
 
-void Enemy::Draw(const ViewProjection& viewProjection) {
-	//ワールドトランスフォーム、ビュープロジェクション、テクスチャハンドルを渡して3Dモデルを描画する
+void EnemyBullet::Draw(const ViewProjection& viewProjection) {
 	//モデルの描画
 	model_->Draw(worldTransform_, viewProjection, textureHandle_);
-	//弾描画
-	if (enemyBullet_) {
-		enemyBullet_->Draw(viewProjection);
-	}
-}
-
-void Enemy::Fire() {
-	//Enemyの座標をコピー
-	Vector3 position = worldTransform_.translation_;
-	//弾の速度
-	const float kEnemyBulletSpeed = -0.5f;
-	Vector3 velocity(0, 0, kEnemyBulletSpeed);
-	//速度ベクトルを自機の向きに合わせて回転させる
-	velocity = VectorCrossMatrix(velocity, worldTransform_);
-	//弾を生成し、初期化
-	EnemyBullet* newEnemyBullet = new EnemyBullet();
-	newEnemyBullet->Initialize(model_, position, velocity);
-	//弾を登録する
-	enemyBullet_ = newEnemyBullet;
 }
