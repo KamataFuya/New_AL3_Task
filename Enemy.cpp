@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "PLayer.h"
 
 float Enemy::ToRadian(float d) {
 	const float pi = 3.14f;
@@ -125,6 +126,14 @@ Vector3 Enemy::VectorCrossMatrix(Vector3 velocity, WorldTransform& worldTransfor
 	return velocity;
 }
 
+float Enemy::length(Vector3& a, Vector3& b) {
+	return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z));
+}
+
+Vector3 Enemy::normalize(Vector3& a, Vector3& b) {
+	return (b - a) / length(a,b);
+}
+
 void Enemy::Initialize(Model* model, uint32_t textureHandle) {
 	//NULLポインタチェック
 	assert(model);
@@ -182,16 +191,25 @@ void Enemy::Draw(const ViewProjection& viewProjection) {
 }
 
 void Enemy::Fire() {
-	//Enemyの座標をコピー
-	Vector3 position = worldTransform_.translation_;
+	//NULLポインタチェック
+	assert(player_);
 	//弾の速度
-	const float kEnemyBulletSpeed = -0.5f;
-	Vector3 velocity(0, 0, kEnemyBulletSpeed);
-	//速度ベクトルを自機の向きに合わせて回転させる
-	velocity = VectorCrossMatrix(velocity, worldTransform_);
+	const float kBulletSpeed = 1.0f;
+	//自キャラのワールド座標を取得する
+	Vector3 playerPos = player_->GetWorldPosition();
+	//敵キャラのワールド座標を取得する
+	Vector3 enemyPos = GetWorldPosition();
+	//敵キャラ->自キャラの差分ベクトルを求める
+	Vector3 differencialVector = playerPos - enemyPos;
+	//ベクトルの正規化
+	if (length(enemyPos, playerPos) != 0) {
+		differencialVector = normalize(enemyPos, playerPos);
+	}
+	//ベクトルの長さを速さに合わせる
+	Vector3 velocity = differencialVector * kBulletSpeed;
 	//弾を生成し、初期化
 	std::unique_ptr<EnemyBullet> newEnemyBullet = std::make_unique<EnemyBullet>();
-	newEnemyBullet->Initialize(model_, position, velocity);
+	newEnemyBullet->Initialize(model_, worldTransform_.translation_, velocity);
 	//弾を登録する
 	enemyBullets_.push_back(std::move(newEnemyBullet));
 }
@@ -199,4 +217,15 @@ void Enemy::Fire() {
 void Enemy::accessPhaseInitializing() {
 	//発射タイマーを初期化
 	kEnemyBulletTimer = kLifeInterval;
+}
+
+Vector3 Enemy::GetWorldPosition() {
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+	//ワールド行列の平行移動成分を取得(ワールド座標)
+	worldPos.x = worldTransform_.translation_.x;
+	worldPos.y = worldTransform_.translation_.y;
+	worldPos.z = worldTransform_.translation_.z;
+
+	return worldPos;
 }

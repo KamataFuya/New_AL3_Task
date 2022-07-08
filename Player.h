@@ -90,6 +90,12 @@ public://メンバ関数
 	/// <returns></returns>
 	Vector3 VectorCrossMatrix(Vector3 velocity, WorldTransform& worldTransform);
 
+	/// <summary>
+	/// ゲッター関数
+	/// </summary>
+	/// <returns></returns>
+	Vector3 GetWorldPosition();
+
 private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;
@@ -105,4 +111,5 @@ private:
 	ViewProjection viewProjection_;
 	//弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets_;
+
 };

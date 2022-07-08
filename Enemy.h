@@ -5,6 +5,10 @@
 #include "EnemyBullet.h"
 #include <memory>
 #include <list>
+#include <cmath>
+#include "Vector3.h"
+//自機クラスの前方宣言
+class Player;
 /// <summary>
 /// 敵
 /// </summary>
@@ -88,6 +92,34 @@ public:
 	/// </summary>
 	void Fire();
 
+	/// <summary>
+	/// プレイヤーのセッター関数
+	/// </summary>
+	/// <param name="player"></param>
+	void SetPlayer(Player* player) { player_ = player; }
+
+	/// <summary>
+	/// Enemyのワールド座標のゲッター関数
+	/// </summary>
+	/// <returns></returns>
+	Vector3 GetWorldPosition();
+
+	/// <summary>
+	/// 長さを求める
+	/// </summary>
+	/// <param name="a"></param>
+	/// <param name="b"></param>
+	/// <returns></returns>
+	float length(Vector3& a, Vector3& b);
+
+	/// <summary>
+	/// ベクトルの正規化
+	/// </summary>
+	/// <param name="a"></param>
+	/// <param name="b"></param>
+	/// <returns></returns>
+	Vector3 normalize(Vector3& a, Vector3& b);
+
 	//メンバ変数
 private:
 	//ワールド変換データ
@@ -102,7 +134,8 @@ private:
 	std::list < std::unique_ptr<EnemyBullet>> enemyBullets_;
 	//発射タイマー
 	int32_t kEnemyBulletTimer = 0;
-	
+	//自キャラ
+	Player* player_ = nullptr;
 public:
 	//発射時間
 	static const int kLifeInterval = 60;
