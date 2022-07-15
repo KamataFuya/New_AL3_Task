@@ -11,6 +11,7 @@
 #include "DebugCamera.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "PlayerBullet.h"
 
 /// <summary>
 /// ゲームシーン
@@ -84,6 +85,16 @@ public: // メンバ関数
 	/// </summary>
 	Matrix4 CreateMatTranslation(Vector3 translation);
 
+	/// <summary>
+	/// 衝突判定と応答
+	/// </summary>
+	void CheckAllCollisions();
+
+	/// <summary>
+	/// 衝突判定を計算
+	/// </summary>
+	bool CollisionDetection(const Vector3& a,const Vector3& b, float pRadius, float eRadius);
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -127,8 +138,4 @@ public:
 	//回転
 	const float kChestRotSpeed = 0.05f;//胸
 	const float kHipRotSpeed = 0.05f;//尻
-
-	/// <summary>
-	/// ゲームシーン用
-	/// </summary>
 };

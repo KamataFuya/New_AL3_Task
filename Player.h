@@ -96,6 +96,17 @@ public://メンバ関数
 	/// <returns></returns>
 	Vector3 GetWorldPosition();
 
+	/// <summary>
+	/// 衝突を検知したら呼び出されるコールバック関数
+	/// </summary>
+	void OnCollision();
+
+	/// <summary>
+	/// 弾リストを取得
+	/// </summary>
+	/// <returns></returns>
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() { return bullets_; }
+
 private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;

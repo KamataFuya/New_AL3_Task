@@ -120,6 +120,17 @@ public:
 	/// <returns></returns>
 	Vector3 normalize(Vector3& a, Vector3& b);
 
+	/// <summary>
+	/// 衝突を検知したら呼び出されるコールバック関数
+	/// </summary>
+	void OnCollision();
+
+	/// <summary>
+	/// 敵弾リストを取得
+	/// </summary>
+	/// <returns></returns>
+	const std::list<std::unique_ptr<EnemyBullet>>& GetEnemyBullets() { return enemyBullets_; }
+
 	//メンバ変数
 private:
 	//ワールド変換データ

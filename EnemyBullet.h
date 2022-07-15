@@ -78,6 +78,17 @@ public:
 	/// <returns></returns>
 	bool IsDead() const { return isDead_; }
 
+	/// <summary>
+	/// 衝突を検知したら呼び出されるコールバック関数
+	/// </summary>
+	void OnCollision();
+
+	/// <summary>
+	/// EnemyBulletのワールド座標のゲッター関数
+	/// </summary>
+	/// <returns></returns>
+	Vector3 GetWorldPosition();
+
 private:
 	//ワールド変換データ
 	WorldTransform worldTransform_;

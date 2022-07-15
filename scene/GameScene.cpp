@@ -57,8 +57,8 @@ Matrix4 GameScene::CreateMatRotation(Vector3 rotation) {
 	Matrix4 matRot = CreditMatrix(matIdentity);
 	//各軸用回転行列を宣言
 	Matrix4 matRotX = CreditMatrix(matIdentity),
-			matRotY = CreditMatrix(matIdentity),
-			matRotZ = CreditMatrix(matIdentity);
+		matRotY = CreditMatrix(matIdentity),
+		matRotZ = CreditMatrix(matIdentity);
 	//回転行列の設定
 	//Z軸回転行列の各要素を設定する
 	matRotZ.m[0][0] = cos(rotation.z);
@@ -91,6 +91,15 @@ Matrix4 GameScene::CreateMatTranslation(Vector3 translation) {
 	matTrans.m[3][2] = translation.z;
 	//設定した行列を返す
 	return matTrans;
+}
+
+bool GameScene::CollisionDetection(const Vector3& a, const Vector3& b, float pRadius, float eRadius) {
+	float dist = (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y) + (b.z - a.z) * (b.z - a.z);
+
+	if (dist <= (pRadius + eRadius) * (pRadius + eRadius)) {
+		return true;
+	}
+	return false;
 }
 
 GameScene::GameScene() {}
@@ -131,7 +140,7 @@ void GameScene::Initialize() {
 	//自キャラの生成
 	player_ = new Player();
 	//自キャラの初期化
-	player_->Initialize(model_,textureHandle_);
+	player_->Initialize(model_, textureHandle_);
 	//敵の生成
 	enemy_ = new Enemy();
 	//敵の初期化
@@ -160,6 +169,69 @@ void GameScene::Update() {
 	//敵の更新	
 	if (enemy_) {
 		enemy_->Update();
+	}
+	//衝突判定の呼び出し
+	CheckAllCollisions();
+}
+
+void GameScene::CheckAllCollisions() {
+	//判定対象AとBの座標
+	Vector3 posA, posB;
+
+	//自弾リストの取得
+	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player_->GetBullets();
+	//敵弾リストの取得
+	const std::list<std::unique_ptr<EnemyBullet>>& enemyBullets = enemy_->GetEnemyBullets();
+	//自キャラと敵弾の当たり判定
+	{
+		//自キャラの座標
+		posA = player_->GetWorldPosition();
+		//自キャラと敵弾全ての当たり判定
+		for (const std::unique_ptr<EnemyBullet>& bullet : enemyBullets) {
+			//敵弾の座標
+			posB = bullet->GetWorldPosition();
+			//弾と弾の交差判定
+			if (CollisionDetection(posA, posB, 0.5f, 0.5f)) {
+				//自キャラの衝突時コールバックを呼び出す
+				player_->OnCollision();
+				//敵弾の衝突時コールバックを呼び出す
+				bullet->OnCollision();
+			}
+		}
+	}
+	//自弾と敵の当たり判定
+	{
+		//敵キャラの座標
+		posA = enemy_->GetWorldPosition();
+		//自弾と敵全ての当たり判定
+		for (const std::unique_ptr<PlayerBullet>& bullet : playerBullets) {
+			//自弾の座標
+			posB = bullet->GetWorldPosition();
+			if (CollisionDetection(posA, posB, 0.5f, 0.5f)) {
+				//敵キャラの衝突時コールバック関数を呼び出す
+				enemy_->OnCollision();
+				//自弾の衝突時コールバック関数を呼び出す
+				bullet->OnCollision();
+			}
+		}
+	}
+	//自弾と敵弾の当たり判定
+	{
+		//自弾と敵弾全ての当たり判定
+		for (const std::unique_ptr<PlayerBullet>& playerBullet : playerBullets) {
+			//自弾の座標
+			posA = playerBullet->GetWorldPosition();
+			for (const std::unique_ptr<EnemyBullet>& enemyBullet : enemyBullets) {
+				//敵弾の座標
+				posB = enemyBullet->GetWorldPosition();
+				if (CollisionDetection(posA, posB, 0.8f, 0.8f)) {
+					//自弾の衝突時コールバック関数を呼び出す
+					playerBullet->OnCollision();
+					//敵弾の衝突時コールバック関数を呼び出す
+					enemyBullet->OnCollision();
+				}
+			}
+		}
 	}
 }
 
